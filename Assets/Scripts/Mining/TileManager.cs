@@ -9,6 +9,7 @@ public class TileManager : MonoBehaviour
     [SerializeField] private List<TileData> tileDatas = new List<TileData>();
     public Dictionary<TileBase, TileData> tileToData = new Dictionary<TileBase, TileData>();
 
+    public TileBase tile;
     private void Awake()
     {
         if (instance == null)
@@ -25,12 +26,19 @@ public class TileManager : MonoBehaviour
 
     void Start()
     {
-        
+        SpawnTiles();
     }
 
     // Update is called once per frame
     void Update()
     {
         
+    }
+
+    private void SpawnTiles()
+    {
+        tilemap.SetTile(new Vector3Int(0,0,0), tile);
+        tilemap.SetTile(new Vector3Int(1, 0, 0), tile);
+        tilemap.SetTile(new Vector3Int(0, 1, 0), tile);
     }
 }
