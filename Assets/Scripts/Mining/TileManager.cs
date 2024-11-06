@@ -28,13 +28,6 @@ public class TileManager : MonoBehaviour
     {
         SpawnTiles();
     }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
-
     private void SpawnTiles()
     {
         tilemap.SetTile(new Vector3Int(0,0,0), tile);

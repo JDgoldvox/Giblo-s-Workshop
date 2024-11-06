@@ -21,10 +21,6 @@ public class MiningActions : MonoBehaviour
 
         rb2D = GetComponent<Rigidbody2D>();
     }
-    void Start()
-    {
-        
-    }
 
     void FixedUpdate()
     {
@@ -36,33 +32,55 @@ public class MiningActions : MonoBehaviour
         rb2D.linearVelocity += walkMultiplier * MiningControls.Instance.moveDirection * Time.deltaTime;
     }
 
-    public void MineTile(Vector3Int cellPosition)
+    public void MineTile()
     {
-        //start coroutine
-        StartCoroutine(WaitToMine(cellPosition));
+        StartCoroutine(WaitToMine());
     }
 
-    private IEnumerator WaitToMine(Vector3Int cellPosition)
+    private IEnumerator WaitToMine()
     {
         float timer = 0;
+        Vector3Int blockTargetted = MiningControls.Instance.mouseCellPosition;
+        Tilemap map = TileManager.instance.tilemap;
 
         //whilst left mouse button still held down
         //and mouse hasn't moved from original starting cell position
-        while (Mouse.current.leftButton.IsPressed() && MiningControls.Instance.mouseCellPosition == cellPosition)
+        while (MiningControls.Instance.isMiningButtonDown)
         {
-            Debug.Log("mining...");
             timer += Time.deltaTime;
+
+            //block continuing until valid tile is hovered over
+            if (!map.GetTile(blockTargetted))
+            {
+                blockTargetted = MiningControls.Instance.mouseCellPosition;
+                timer = 0;
+                yield return null;
+                continue;
+            }
+
+            //check if we moved our mouse
+            if (MiningControls.Instance.mouseCellPosition != blockTargetted)
+            {
+                timer = 0;
+                blockTargetted = MiningControls.Instance.mouseCellPosition;
+            }
+
             if (timer > timeToMineABlock)
             {
-                Tilemap map = TileManager.instance.tilemap;
-                map.SetTile(cellPosition, null);
+                AddMaterialToInventory(map.GetTile(blockTargetted));
+                map.SetTile(blockTargetted, null);
             }
 
             yield return null;
         }
-        Debug.Log("mining stopped! , CELL POS CHANGED FROM: " + cellPosition + " TO: " + MiningControls.Instance.mouseCellPosition);
 
         //nothing happened
         yield return null;
+    }
+
+    private void AddMaterialToInventory(TileBase tileBase)
+    {
+        TileData data = TileManager.instance.tileToData[tileBase];
+        Debug.Log("found " +  data.tileName.ToString());
     }
 }

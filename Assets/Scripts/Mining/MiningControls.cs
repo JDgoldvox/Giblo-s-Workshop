@@ -13,7 +13,7 @@ public class MiningControls : MonoBehaviour
 
     public Vector2 moveDirection { get; private set; } 
     public Vector3Int mouseCellPosition { get; private set; } 
-    public bool isMouseDown { get; private set; } = false;
+    public bool isMiningButtonDown { get; private set; } = false;
 
     private void Awake()
     {
@@ -23,7 +23,6 @@ public class MiningControls : MonoBehaviour
         {
             Instance = this;
         }
-
     }
 
     private void OnEnable()
@@ -31,6 +30,7 @@ public class MiningControls : MonoBehaviour
         mineAction = miningInputActions.Player.Mine;
         mineAction.Enable();
         mineAction.performed += Mine;
+        mineAction.canceled += Mine;
 
         moveAction = miningInputActions.Player.Move;
         moveAction.Enable();
@@ -42,6 +42,7 @@ public class MiningControls : MonoBehaviour
     {
         mineAction.Disable();
         mineAction.performed -= Mine;
+        mineAction.canceled -= Mine;
 
         moveAction.Disable();
         moveAction.performed -= Move;
@@ -51,29 +52,19 @@ public class MiningControls : MonoBehaviour
     void Update()
     {
         UpdateMouseCellPosition();
-        Debug.Log("is mouse down: " + isMouseDown);
     }
 
     private void Mine(InputAction.CallbackContext context)
     {
         if (context.performed)
         {
-            Tilemap map = TileManager.instance.tilemap;
-            Vector2 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-            Vector3Int worldToCell = map.WorldToCell(mousePos);
-            TileBase clickedTile = map.GetTile(worldToCell);
+            isMiningButtonDown = context.ReadValueAsButton();
+            MiningActions.Instance.MineTile();
 
-            //return if empty clicked on tile
-            if (clickedTile == null)
-            {
-                //Debug.Log(worldToCell + " CLICKED ON: " + "E-M-P-T-Y");
-                return;
-            }
-
-            //Debug.Log(worldToCell + " CLICKED ON: " + clickedTile.name);
-
-            //activate mining function
-            MiningActions.Instance.MineTile(worldToCell);
+        }
+        else if (context.canceled)
+        {
+            isMiningButtonDown = false;
         }
     }
 
