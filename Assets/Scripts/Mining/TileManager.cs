@@ -8,8 +8,11 @@ public class TileManager : MonoBehaviour
     public Tilemap tilemap;
     [SerializeField] private List<TileData> tileDatas = new List<TileData>();
     public Dictionary<TileBase, TileData> tileToData = new Dictionary<TileBase, TileData>();
+    public Dictionary<TILE_NAME, TileBase> tileNameToTileBase = new Dictionary<TILE_NAME, TileBase>();
 
-    public TileBase tile;
+    private int width = 20;
+    private int height = 1000;
+
     private void Awake()
     {
         if (instance == null)
@@ -21,6 +24,7 @@ public class TileManager : MonoBehaviour
         foreach (var tileData in tileDatas)
         {
             tileToData.Add(tileData.tileBase, tileData);
+            tileNameToTileBase.Add(tileData.tileName, tileData.tileBase);
         }
     }
 
@@ -30,8 +34,37 @@ public class TileManager : MonoBehaviour
     }
     private void SpawnTiles()
     {
-        tilemap.SetTile(new Vector3Int(0,0,0), tile);
-        tilemap.SetTile(new Vector3Int(1, 0, 0), tile);
-        tilemap.SetTile(new Vector3Int(0, 1, 0), tile);
+        for (int x = 0; x < width; x++)
+        {
+            for (int y = 0; y < height ; y++)
+            {
+                //roll random number
+                int rng = UnityEngine.Random.Range(0, 100);
+                
+                //grab tile according to random number and y height
+                TileBase generatedTile = GetTileToMatchHeight(rng, y);
+
+                //set tile
+                tilemap.SetTile(new Vector3Int(x, -y, 0), generatedTile);
+            }
+
+        }
+    }
+
+    private TileBase GetTileToMatchHeight(int rng, int height)
+    {
+        //IF Y LESS THAN 50
+        if(height < 50)
+        {
+            return rng switch
+            {
+                <= 20 => tileNameToTileBase.TryGetValue(TILE_NAME.COPPER, out TileBase tile) ? tile : null,
+                < 100 => tileNameToTileBase.TryGetValue(TILE_NAME.SOFT_ROCK, out TileBase tile) ? tile : null,
+                _ => null // Default case
+            };
+        }
+
+        return null;
+        
     }
 }

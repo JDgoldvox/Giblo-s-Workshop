@@ -11,5 +11,14 @@ public class TileData : ScriptableObject
 
 public enum TILE_NAME
 {
-    IRON, GOLD, ROCK, COPPER
+    SOFT_ROCK,
+    MEDIUM_ROCK,
+    HARD_ROCK,
+    EXTREMELY_HARD_ROCK,
+    IRON,
+    GOLD,
+    COPPER,
+    COLBOLT,
+    LAVA,
+    WATER,
 }

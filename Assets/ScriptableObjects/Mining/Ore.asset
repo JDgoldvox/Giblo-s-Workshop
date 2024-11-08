@@ -12,5 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 70d0650d411eaf84ca0ebf3b701d3161, type: 3}
   m_Name: Ore
   m_EditorClassIdentifier: 
+  tileName: 6
   tileBase: {fileID: 11400000, guid: de0f1853d0881dd4394371ba937f5c0e, type: 2}
   isOre: 1
