@@ -80,7 +80,6 @@ public class MiningControls : MonoBehaviour
 
         if (hit)
         {
-            Debug.Log("hit");
             isTouchingFloor = true;
         }
         else

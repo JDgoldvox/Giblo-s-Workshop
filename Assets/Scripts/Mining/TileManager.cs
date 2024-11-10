@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.Tilemaps;
 using System.Collections.Generic;
 using System;
-using Unity.Mathematics;
+using System.Linq;
 
 public class TileManager : MonoBehaviour
 {
@@ -24,6 +24,27 @@ public class TileManager : MonoBehaviour
     private int width = 20;
     private int height = 1000;
 
+    private float randomXOffset = 0;
+    private float randomYOffset = 0;
+
+    private float veryLow = 0.1f;
+    private float low = 0.15f;
+    private float medium = 0.2f;
+
+    class TilesThatExistHere
+    {
+        public TilesThatExistHere(List<TILE_NAME> listIn, Dictionary<TILE_NAME, float> DicIn)
+        {
+            tileNamesInOrder = listIn;
+            nameToChance = DicIn;
+        }
+        public List<TILE_NAME> tileNamesInOrder;
+        public Dictionary<TILE_NAME, float> nameToChance;
+    }
+
+    //height to dictionary of chances
+    private Dictionary<int, TilesThatExistHere> TilesThatExistOnThisHeight = new Dictionary<int, TilesThatExistHere>();
+
     private void Awake()
     {
         if (instance == null)
@@ -44,74 +65,26 @@ public class TileManager : MonoBehaviour
         //1. generate seed
         GenerateRandomOffSets();
 
+        //2. put data in chances for tile to spawn
+        SetTileHeightData();
+
+        randomXOffset = UnityEngine.Random.Range(0.01f, 100f);
+        randomYOffset = UnityEngine.Random.Range(0.01f, 100f);
+
         //2. spawn
         SpawnTiles();
     }
     private void SpawnTiles()
     {
-        //different each time we generate it
-        float randomXOffset = UnityEngine.Random.Range(0.01f, 100f);
-        float randomYOffset = UnityEngine.Random.Range(0.01f, 100f);
+        int lastYInterval = 0;
+        int sectionInterval = 200;
 
-        for (int x = 0; x < width; x++)
-        {
-            for (int y = 0; y < height; y++)
-            {
-                float rng = Mathf.PerlinNoise((x + randomXOffset) * 0.2f, (y + randomYOffset) * 0.2f);
-                rng = Mathf.Clamp(rng, 0, 1);
-
-                //grab tile according to random number and y height
-                TileBase generatedTile = GetTileToMatchHeight(rng, y);
-
-                //set tile
-                tilemap.SetTile(new Vector3Int(x, -y, 0), generatedTile);
-            }
+        while (lastYInterval < 600) {
+            List<TILE_NAME> sectionListOfTilesInOrder = TilesThatExistOnThisHeight[lastYInterval].tileNamesInOrder;
+                LoopAndPlaceTilesInSection(lastYInterval, lastYInterval + sectionInterval, sectionListOfTilesInOrder);
+            lastYInterval += sectionInterval;
         }
-    }
-
-    private TileBase GetTileToMatchHeight(float rng, int height)
-    {
-        //IF Y LESS THAN 50
-        if (height < 50)
-        {
-            return rng switch
-            {
-                <= 0.1f => tileNameToTileBase.TryGetValue(TILE_NAME.COPPER, out TileBase tile) ? tile : null,
-                <= 1f => tileNameToTileBase.TryGetValue(TILE_NAME.SOFT_ROCK, out TileBase tile) ? tile : null,
-                _ => null
-            };
-        }
-        else if (height < 100)
-        {
-            return rng switch
-            {
-                <= 0.12f => tileNameToTileBase.TryGetValue(TILE_NAME.COPPER, out TileBase tile) ? tile : null,
-                <= 1f => tileNameToTileBase.TryGetValue(TILE_NAME.SOFT_ROCK, out TileBase tile) ? tile : null,
-                _ => null
-            }; ;
-        }
-        else if (height < 200)
-        {
-            return rng switch
-            {
-                <= 0.16f => tileNameToTileBase.TryGetValue(TILE_NAME.COPPER, out TileBase tile) ? tile : null,
-                <= 1f => tileNameToTileBase.TryGetValue(TILE_NAME.SOFT_ROCK, out TileBase tile) ? tile : null,
-                _ => null
-            }; ;
-        }
-        else if (height < 500)
-        {
-            return rng switch
-            {
-                <= 0.20f => tileNameToTileBase.TryGetValue(TILE_NAME.COPPER, out TileBase tile) ? tile : null,
-                <= 0.30f => tileNameToTileBase.TryGetValue(TILE_NAME.IRON, out TileBase tile) ? tile : null,
-                <= 1f => tileNameToTileBase.TryGetValue(TILE_NAME.SOFT_ROCK, out TileBase tile) ? tile : null,
-                _ => null
-            }; ;
-        }
-
-        return null;
-
+        
     }
 
     private void GenerateRandomOffSets()
@@ -121,5 +94,110 @@ public class TileManager : MonoBehaviour
             float randomOffset = UnityEngine.Random.Range(0.01f, 100f);
             tileNameToOffset.Add(tileName, randomOffset);
         }
+    }
+
+    private void LoopAndPlaceTilesInSection(int currentHeight, int maxHeight, List<TILE_NAME> tilesThatExistHere)
+    {
+        int numberOfTilesThatExistHere = tilesThatExistHere.Count();
+        float chance = 1;
+
+        TILE_NAME currentTileName;
+        for (int typeCount = 0; typeCount < numberOfTilesThatExistHere; typeCount++)
+        {
+            currentTileName = tilesThatExistHere[typeCount];
+
+            //SET ALL STONE FIRST (ALWAYS 0)
+            if(typeCount == 0)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    for (int y = currentHeight; y < maxHeight; y++)
+                    {
+                        tilemap.SetTile(new Vector3Int(x, -y, 0), tileNameToTileBase[currentTileName]);
+                    }
+                }
+
+                continue;
+            }
+
+            chance = TilesThatExistOnThisHeight[currentHeight].nameToChance[currentTileName];
+
+            //after base placed down
+            for (int x = 0; x < width; x++)
+            {
+                for (int y = currentHeight; y < maxHeight; y++)
+                {
+                    float rng = Mathf.PerlinNoise((x + randomXOffset + tileNameToOffset[currentTileName]) * 0.4f, (y + randomYOffset + tileNameToOffset[currentTileName]) * 0.4f);
+                    rng = Mathf.Clamp01(rng);
+
+                    //check if succeeded rng
+                    if(chance >= rng)
+                    {
+                        tilemap.SetTile(new Vector3Int(x, -y, 0), tileNameToTileBase[currentTileName]);
+                    }
+                }
+            }
+        }
+
+    }
+
+    private void SetTileHeightData()
+    {
+        //0
+        {
+            List<TILE_NAME> tilesOrder = new List<TILE_NAME>
+            {
+                TILE_NAME.SOFT_ROCK,
+                TILE_NAME.COPPER
+            };
+
+            Dictionary<TILE_NAME, float> tileOffsets = new Dictionary<TILE_NAME, float>
+            {
+            { TILE_NAME.SOFT_ROCK, 1f },
+            { TILE_NAME.COPPER, veryLow },
+            };
+
+            TilesThatExistHere tilesThatExistHere = new TilesThatExistHere(tilesOrder, tileOffsets);
+            TilesThatExistOnThisHeight.Add(0, tilesThatExistHere);
+        }
+
+        //200
+        {
+            List<TILE_NAME> tilesOrder = new List<TILE_NAME>
+            {
+                TILE_NAME.SOFT_ROCK,
+                TILE_NAME.COPPER
+            };
+
+            Dictionary<TILE_NAME, float> tileOffsets = new Dictionary<TILE_NAME, float>
+            {
+            { TILE_NAME.SOFT_ROCK, 1f },
+            { TILE_NAME.COPPER, low },
+            };
+
+            TilesThatExistHere tilesThatExistHere = new TilesThatExistHere(tilesOrder, tileOffsets);
+            TilesThatExistOnThisHeight.Add(200, tilesThatExistHere);
+        }
+
+        //400
+        {
+            List<TILE_NAME> tilesOrder = new List<TILE_NAME>
+            {
+                TILE_NAME.SOFT_ROCK,
+                TILE_NAME.COPPER,
+                TILE_NAME.IRON
+            };
+
+            Dictionary<TILE_NAME, float> tileOffsets = new Dictionary<TILE_NAME, float>
+            {
+            { TILE_NAME.SOFT_ROCK, 1f },
+            { TILE_NAME.COPPER, medium },
+            { TILE_NAME.IRON, veryLow },
+            };
+
+            TilesThatExistHere tilesThatExistHere = new TilesThatExistHere(tilesOrder, tileOffsets);
+            TilesThatExistOnThisHeight.Add(400, tilesThatExistHere);
+        }
+
     }
 }
