@@ -10,8 +10,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 70d0650d411eaf84ca0ebf3b701d3161, type: 3}
-  m_Name: Rock
+  m_Name: hard rock
   m_EditorClassIdentifier: 
-  tileName: 0
-  tileBase: {fileID: 11400000, guid: f5f66a51b994c5444b459fa05e4a3f26, type: 2}
+  tileName: 2
+  tileBase: {fileID: 11400000, guid: 0a846aab60eb6124597fe6be679ba178, type: 2}
   isOre: 0

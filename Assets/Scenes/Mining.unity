@@ -210,7 +210,6 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 2106317904}
-  - {fileID: 1492484016}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!50 &785933229
@@ -226,10 +225,10 @@ Rigidbody2D:
   m_UseFullKinematicContacts: 0
   m_UseAutoMass: 0
   m_Mass: 1
-  m_LinearDamping: 0
+  m_LinearDamping: 2
   m_AngularDamping: 0.05
-  m_GravityScale: 1
-  m_Material: {fileID: 0}
+  m_GravityScale: 3
+  m_Material: {fileID: 6200000, guid: b6e9c79c1c5feb643b99e25a8091f62c, type: 2}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0
@@ -298,6 +297,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 32d3bd86a8d4eae4db81dbb7a060e9c2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  floorCollider: {fileID: 0}
 --- !u!114 &785933232
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -311,8 +311,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   S_TileManager: {fileID: 1610974629}
-  walkMultiplier: 10
-  jumpForce: 1
+  walkMultiplier: 20
+  jumpForce: 150
+  canJump: 0
 --- !u!114 &785933233
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -339,7 +340,7 @@ GameObject:
   - component: {fileID: 1071811027}
   - component: {fileID: 1071811026}
   - component: {fileID: 1071811025}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Tilemap
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -381,7 +382,7 @@ TilemapRenderer:
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
   m_SmallMeshCulling: 1
-  m_RenderingLayerMask: 1
+  m_RenderingLayerMask: 4294967295
   m_RendererPriority: 0
   m_Materials:
   - {fileID: 2100000, guid: a97c105638bdf8b4a8650670310a4cd3, type: 2}
@@ -409,7 +410,7 @@ TilemapRenderer:
   m_ChunkCullingBounds: {x: 0, y: 0, z: 0}
   m_MaxChunkCount: 16
   m_MaxFrameAge: 16
-  m_SortOrder: 0
+  m_SortOrder: 2
   m_Mode: 0
   m_DetectChunkCullingBounds: 0
   m_MaskInteraction: 0
@@ -542,7 +543,7 @@ Rigidbody2D:
   m_LinearDamping: 0
   m_AngularDamping: 0.05
   m_GravityScale: 0
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 6200000, guid: 4ad458e1454863640ac463d2df8dec52, type: 2}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0
@@ -588,77 +589,9 @@ TilemapCollider2D:
   m_CompositeOperation: 1
   m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0}
-  m_MaximumTileChangeCount: 1000
+  m_MaximumTileChangeCount: 1282
   m_ExtrusionFactor: 0
   m_UseDelaunayMesh: 0
---- !u!1 &1492484015
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1492484016}
-  - component: {fileID: 1492484017}
-  m_Layer: 0
-  m_Name: FeetCollider
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &1492484016
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1492484015}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -0.296, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 785933228}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!58 &1492484017
-CircleCollider2D:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1492484015}
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Density: 1
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_ForceSendLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ForceReceiveLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ContactCaptureLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_CallbackLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_IsTrigger: 0
-  m_UsedByEffector: 0
-  m_CompositeOperation: 0
-  m_CompositeOrder: 0
-  m_Offset: {x: 0, y: 0}
-  m_Radius: 0.37
 --- !u!1 &1610974626
 GameObject:
   m_ObjectHideFlags: 0
@@ -719,8 +652,16 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   tilemap: {fileID: 1071811024}
   tileDatas:
+  - {fileID: 11400000, guid: 9c4e3fc2d20b0bd46ba1d08bd6544725, type: 2}
   - {fileID: 11400000, guid: edba57f6dcb485a4bb0ff6c8513da8a4, type: 2}
+  - {fileID: 11400000, guid: 8b32e36d6eb44214eba6aef918869bd6, type: 2}
+  - {fileID: 11400000, guid: a46f334b1ea23c84e961559ccd8c7bed, type: 2}
+  - {fileID: 11400000, guid: c0d2f9435e7ad404a905128c5aeb435e, type: 2}
+  - {fileID: 11400000, guid: 1497713d24a951f4693d09df42013bec, type: 2}
+  - {fileID: 11400000, guid: 8f4a15950d705cb4293625338b1eadbb, type: 2}
+  - {fileID: 11400000, guid: 28e6dfcd417177e44b1f25c5338cddcb, type: 2}
   - {fileID: 11400000, guid: 1fb3ffd4287e79f4ca63a1d3246769a3, type: 2}
+  - {fileID: 11400000, guid: adebaa25fde3d9c4981124f00afa5df6, type: 2}
 --- !u!1 &2106317901
 GameObject:
   m_ObjectHideFlags: 0

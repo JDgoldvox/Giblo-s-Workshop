@@ -8,6 +8,8 @@ public class MiningControls : MonoBehaviour
 {
     public static MiningControls Instance;
 
+    [SerializeField]
+
     private MiningInputActions miningInputActions;
     private InputAction mineAction;
     private InputAction moveAction;
@@ -16,12 +18,10 @@ public class MiningControls : MonoBehaviour
     public Vector2 moveDirection { get; private set; } 
     public Vector3Int mouseCellPosition { get; private set; } 
     public bool isMiningButtonDown { get; private set; } = false;
-    public bool isJumping { get; private set; } = false;
+    public bool isJumpHeld { get; private set; } = false;
     [SerializeField] CircleCollider2D floorCollider;
     public bool isTouchingFloor { get; private set; } = false;
 
-
-    private float maxJumpTime = 0.2f;
 
     private void Awake()
     {
@@ -68,12 +68,27 @@ public class MiningControls : MonoBehaviour
         UpdateMouseCellPosition();
     }
 
-    //CANT DO THIS, NEED TO BE ON ITS OWN SRIPT
-    private void OnTriggerStay2D(Collider2D collision)
+    private void FixedUpdate()
     {
-        //if(collision.CompareTag("floor")
+        IsTouchingFloor();
     }
 
+    private void IsTouchingFloor()
+    {
+        RaycastHit2D hit = Physics2D.Raycast(transform.position, new Vector2(0,-1), 0.6f, LayerMask.GetMask("TileMap"));
+        //Debug.DrawRay(transform.position, new Vector2(0, -1 * 0.6f), Color.red, 1f);
+
+        if (hit)
+        {
+            Debug.Log("hit");
+            isTouchingFloor = true;
+        }
+        else
+        {
+            isTouchingFloor = false;
+        }
+
+    }
     private void Mine(InputAction.CallbackContext context)
     {
         if (context.performed)
@@ -111,26 +126,13 @@ public class MiningControls : MonoBehaviour
     {
         if (context.performed)
         {
-            isJumping = true;
-            StartCoroutine(JumpTimer());
+            isJumpHeld = true;
+            MiningActions.Instance.StartJump();
         }
         else if (context.canceled)
         {
-            isJumping = false;
+            isJumpHeld = false;
         }
     }
 
-    private IEnumerator JumpTimer()
-    {
-        float jumpTimer = maxJumpTime;
-
-        while(jumpTimer > 0)
-        {
-            jumpTimer -= Time.deltaTime;
-            yield return null;
-        }
-
-        isJumping = false;
-        yield return null;
-    }
 }

@@ -17,6 +17,13 @@ public class MiningActions : MonoBehaviour
     Rigidbody2D rb2D = null;
     float timeToMineABlock = 2;
 
+    private int jumpsRemaining = 0;
+    private int maxNumberOfJumps = 2;
+    private float maxJumpTime = 0.1f;
+    [HideInInspector] public bool canJump = false;
+    private float maxIgnoreFloorResetTime = 0.1f;
+    private bool ignoreFloorReset = false;
+
     private void Awake()
     {
         if(Instance == null)
@@ -32,7 +39,7 @@ public class MiningActions : MonoBehaviour
     void FixedUpdate()
     {
         Movement();
-        Jumping();
+        UpdateJump();
     }
 
     private void Movement()
@@ -95,11 +102,59 @@ public class MiningActions : MonoBehaviour
 
     }
 
-    private void Jumping()
+    public void StartJump()
     {
-        if (S_MiningControls.isJumping && Floor)
+        canJump = true;
+        ignoreFloorReset = true;
+        StartCoroutine(IgnoreFloorResetTimer());
+    }
+
+    private void UpdateJump()
+    {
+        //reset
+        if (S_MiningControls.isTouchingFloor && !ignoreFloorReset)
         {
-            rb2D.AddForceY(jumpForce, ForceMode2D.Impulse);
+            Debug.Log("Resetting jump");
+            jumpsRemaining = maxNumberOfJumps;
         }
+
+        //jump
+        if (S_MiningControls.isJumpHeld && canJump && jumpsRemaining > 0)
+        {
+            //do the jump
+            StartCoroutine(JumpTimer());
+            jumpsRemaining--;
+        }
+    }
+
+    private IEnumerator JumpTimer()
+    {
+        float jumpTimer = maxJumpTime;
+
+        //whilst we still allowed to jump or stopped holding jump
+        while (jumpTimer > 0 && S_MiningControls.isJumpHeld)
+        {
+            rb2D.AddForceY(jumpForce * Time.deltaTime, ForceMode2D.Impulse);
+            jumpTimer -= Time.deltaTime;
+            canJump = false;
+            yield return null;
+        }
+
+        yield return null;
+    }
+
+    private IEnumerator IgnoreFloorResetTimer()
+    {
+        float ignoreFloorResetTimer = maxIgnoreFloorResetTime;
+
+        //whilst we still allowed to jump or stopped holding jump
+        while (ignoreFloorResetTimer > 0)
+        {
+            ignoreFloorResetTimer -= Time.deltaTime;
+            yield return null;
+        }
+        ignoreFloorReset = false;
+
+        yield return null;
     }
 }
