@@ -64,9 +64,14 @@ public class MiningActions : MonoBehaviour
         {
             timer += Time.deltaTime;
 
+            S_TileManager.SetBreakSprite(blockTargetted, (timer / timeToMineABlock) * 100);
+
             //block continuing until valid tile is hovered over
             if (!map.GetTile(blockTargetted))
             {
+                //remove previous break sprite
+                S_TileManager.SetBreakSprite(blockTargetted, 0);
+
                 blockTargetted = S_MiningControls.mouseCellPosition;
                 timer = 0;
                 yield return null;
@@ -84,6 +89,9 @@ public class MiningActions : MonoBehaviour
             {
                 AddMaterialToInventory(map.GetTile(blockTargetted));
                 map.SetTile(blockTargetted, null);
+
+                //remove previous break sprite
+                S_TileManager.SetBreakSprite(blockTargetted, 0);
             }
 
             yield return null;

@@ -7,10 +7,13 @@ using System.Linq;
 public class TileManager : MonoBehaviour
 {
     public static TileManager instance;
-    public Tilemap tilemap;
+    [SerializeField]  public Tilemap tilemap;
+    [SerializeField] public Tilemap breakTileMap;
 
     //all tiles
-    [SerializeField] private List<TileData> tileDatas = new List<TileData>();
+    public List<TileData> tileDatas = new List<TileData>();
+    [SerializeField] private List<TileBase> breakTiles = new List<TileBase>();
+
 
     //tile base to tile data
     public Dictionary<TileBase, TileData> tileToData = new Dictionary<TileBase, TileData>();
@@ -198,6 +201,30 @@ public class TileManager : MonoBehaviour
             TilesThatExistHere tilesThatExistHere = new TilesThatExistHere(tilesOrder, tileOffsets);
             TilesThatExistOnThisHeight.Add(400, tilesThatExistHere);
         }
-
     }
+
+    public void SetBreakSprite(Vector3Int position, float percentage)
+    {
+        if(percentage > 0 && percentage < 25)
+        {
+            breakTileMap.SetTile(position, breakTiles[0]);
+        }
+        else if(percentage >= 25 && percentage < 50)
+        {
+            breakTileMap.SetTile(position, breakTiles[1]);
+        }
+        else if (percentage > 50 && percentage < 75)
+        {
+            breakTileMap.SetTile(position, breakTiles[2]);
+        }
+        else if (percentage > 75 && percentage < 100)
+        {
+            breakTileMap.SetTile(position, breakTiles[3]);
+        }
+        else if(percentage == 0)
+        {
+            breakTileMap.SetTile(position, null);
+        }
+    }
+
 }
