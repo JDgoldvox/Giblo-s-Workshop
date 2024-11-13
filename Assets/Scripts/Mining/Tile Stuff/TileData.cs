@@ -6,7 +6,8 @@ public class TileData : ScriptableObject
 {
     public TILE_NAME tileName;
     public TileBase tileBase;
-    public bool isOre;
+    public float maxBreakTime;
+    public int hardness;
 }
 
 public enum TILE_NAME

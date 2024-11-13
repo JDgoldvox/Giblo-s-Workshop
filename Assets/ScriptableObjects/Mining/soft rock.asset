@@ -14,4 +14,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   tileName: 0
   tileBase: {fileID: 11400000, guid: 924ee4f8fba8bf540b04be021e5cf4e9, type: 2}
-  isOre: 0
+  maxBreakTime: 2
+  hardness: 0

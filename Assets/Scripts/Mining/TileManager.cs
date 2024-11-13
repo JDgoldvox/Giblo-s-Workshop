@@ -3,6 +3,8 @@ using UnityEngine.Tilemaps;
 using System.Collections.Generic;
 using System;
 using System.Linq;
+using UnityEngine.UIElements;
+using System.Collections;
 
 public class TileManager : MonoBehaviour
 {
@@ -13,7 +15,6 @@ public class TileManager : MonoBehaviour
     //all tiles
     public List<TileData> tileDatas = new List<TileData>();
     [SerializeField] private List<TileBase> breakTiles = new List<TileBase>();
-
 
     //tile base to tile data
     public Dictionary<TileBase, TileData> tileToData = new Dictionary<TileBase, TileData>();
@@ -48,6 +49,9 @@ public class TileManager : MonoBehaviour
     //height to dictionary of chances
     private Dictionary<int, TilesThatExistHere> TilesThatExistOnThisHeight = new Dictionary<int, TilesThatExistHere>();
 
+    //live tile data
+    public Dictionary<Vector3Int, LiveTileData> liveTileData = new Dictionary<Vector3Int, LiveTileData>();
+
     private void Awake()
     {
         if (instance == null)
@@ -74,8 +78,11 @@ public class TileManager : MonoBehaviour
         randomXOffset = UnityEngine.Random.Range(0.01f, 100f);
         randomYOffset = UnityEngine.Random.Range(0.01f, 100f);
 
-        //2. spawn
+        //3. spawn tiles
         SpawnTiles();
+
+        //4. Set Live Data
+        SetLiveData();
     }
     private void SpawnTiles()
     {
@@ -205,6 +212,12 @@ public class TileManager : MonoBehaviour
 
     public void SetBreakSprite(Vector3Int position, float percentage)
     {
+        if (!liveTileData.ContainsKey(position))
+        {
+            Debug.Log("Does not contain " + position); 
+            return;
+        }
+
         if(percentage > 0 && percentage < 25)
         {
             breakTileMap.SetTile(position, breakTiles[0]);
@@ -221,9 +234,34 @@ public class TileManager : MonoBehaviour
         {
             breakTileMap.SetTile(position, breakTiles[3]);
         }
-        else if(percentage == 0)
+    }
+
+    public void DeleteBreakSprite(Vector3Int position)
+    {
+        breakTileMap.SetTile(position, null);
+    }
+
+    public void SetLiveData()
+    {
+        //loop though grid
+        for(int x = 0; x < width; x++)
         {
-            breakTileMap.SetTile(position, null);
+            for (int y = 0; y < height; y++)
+            {
+                Vector3Int currentPos = new Vector3Int(x, -y, 0);
+                TileBase typeOfTile = tilemap.GetTile(currentPos);
+
+                //get break time
+                if(typeOfTile == null)
+                {
+                    continue;
+                }
+
+                TileData thisTileData = tileToData[typeOfTile];
+                float maxBreakTime = thisTileData.maxBreakTime;
+
+                liveTileData.Add(currentPos, new LiveTileData(maxBreakTime));
+            }
         }
     }
 

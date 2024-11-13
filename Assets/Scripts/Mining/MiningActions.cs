@@ -1,7 +1,6 @@
 using UnityEngine;
 using System.Collections;
 using UnityEngine.Tilemaps;
-using UnityEngine.InputSystem;
 
 public class MiningActions : MonoBehaviour
 {
@@ -15,7 +14,6 @@ public class MiningActions : MonoBehaviour
     [SerializeField] private float jumpForce;
     
     Rigidbody2D rb2D = null;
-    float timeToMineABlock = 2;
 
     private int jumpsRemaining = 0;
     private int maxNumberOfJumps = 2;
@@ -55,49 +53,91 @@ public class MiningActions : MonoBehaviour
     private IEnumerator WaitToMine()
     {
         float timer = 0;
-        Vector3Int blockTargetted = S_MiningControls.mouseCellPosition;
+        Vector3Int blockTargettedPos = S_MiningControls.mouseCellPosition;
         Tilemap map = S_TileManager.tilemap;
 
+        //get max break time
+        float timeToMineABlock = 100;
+        if (S_TileManager.liveTileData.TryGetValue(blockTargettedPos, out LiveTileData liveTileData))
+        {
+            timeToMineABlock = liveTileData.maxBreakTime;
+            timer = liveTileData.currentBreakTime;
+        }
+
         //whilst left mouse button still held down
-        //and mouse hasn't moved from original starting cell position
         while (S_MiningControls.isMiningButtonDown)
         {
-            timer += Time.deltaTime;
-
-            S_TileManager.SetBreakSprite(blockTargetted, (timer / timeToMineABlock) * 100);
-
             //block continuing until valid tile is hovered over
-            if (!map.GetTile(blockTargetted))
+            if (!map.GetTile(blockTargettedPos))
             {
-                //remove previous break sprite
-                S_TileManager.SetBreakSprite(blockTargetted, 0);
-
-                blockTargetted = S_MiningControls.mouseCellPosition;
-                timer = 0;
+                timer = liveTileData.currentBreakTime;
+                blockTargettedPos = S_MiningControls.mouseCellPosition;
+                timeToMineABlock = S_TileManager.liveTileData[blockTargettedPos].maxBreakTime; //change new block mining time
                 yield return null;
-                continue;
             }
+
+            //update current break time
+            timer += Time.deltaTime;
+            liveTileData.currentBreakTime = timer;
 
             //check if we moved our mouse
-            if (S_MiningControls.mouseCellPosition != blockTargetted)
+            if (S_MiningControls.mouseCellPosition != blockTargettedPos)
             {
-                timer = 0;
-                blockTargetted = S_MiningControls.mouseCellPosition;
+                timer = liveTileData.currentBreakTime;
+                Debug.Log("remoing break sprite");
+                //Start a timer to see whether the tile was touched again, if not 3 seconds will pass and live data will reset
+                StartCoroutine(UntouchedTileTimer(blockTargettedPos));
+
+                blockTargettedPos = S_MiningControls.mouseCellPosition;
             }
 
+            // update break sprite
+            S_TileManager.SetBreakSprite(blockTargettedPos, (timer / timeToMineABlock) * 100);
+            S_TileManager.liveTileData[blockTargettedPos].TouchTile();
+
+            //if we break block
             if (timer > timeToMineABlock)
             {
-                AddMaterialToInventory(map.GetTile(blockTargetted));
-                map.SetTile(blockTargetted, null);
+                AddMaterialToInventory(map.GetTile(blockTargettedPos));
+                map.SetTile(blockTargettedPos, null);
 
                 //remove previous break sprite
-                S_TileManager.SetBreakSprite(blockTargetted, 0);
+                S_TileManager.DeleteBreakSprite(blockTargettedPos);
+
             }
 
             yield return null;
         }
 
+        StartCoroutine(UntouchedTileTimer(blockTargettedPos));
+
         //nothing happened
+        yield return null;
+    }
+
+    IEnumerator UntouchedTileTimer(Vector3Int tileTargettedPos)
+    {
+        float threeSecondTimer = 0;
+        LiveTileData ltd = S_TileManager.liveTileData[tileTargettedPos];
+
+        //if not touched again, break loop
+        ltd.UntouchTile();
+
+        while (!ltd.isTouched)
+        {
+            threeSecondTimer += Time.deltaTime;
+
+            //three second threshold passed, remove all break sprites and reset ltd
+            if (threeSecondTimer > 3)
+            {
+                ltd.ResetLiveData();
+                S_TileManager.DeleteBreakSprite(tileTargettedPos);
+                yield break;
+            }
+
+            yield return null;
+        }
+
         yield return null;
     }
 

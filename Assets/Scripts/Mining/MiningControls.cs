@@ -19,7 +19,6 @@ public class MiningControls : MonoBehaviour
     public Vector3Int mouseCellPosition { get; private set; } 
     public bool isMiningButtonDown { get; private set; } = false;
     public bool isJumpHeld { get; private set; } = false;
-    [SerializeField] CircleCollider2D floorCollider;
     public bool isTouchingFloor { get; private set; } = false;
 
 
@@ -118,7 +117,7 @@ public class MiningControls : MonoBehaviour
     {
         Tilemap map = TileManager.instance.tilemap;
         Vector2 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        mouseCellPosition = map.WorldToCell(mousePos);
+        mouseCellPosition = new Vector3Int(map.WorldToCell(mousePos).x, map.WorldToCell(mousePos).y, 0);
     }
 
     private void Jump(InputAction.CallbackContext context)

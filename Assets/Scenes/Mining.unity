@@ -402,12 +402,12 @@ TilemapRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 4
   m_ChunkSize: {x: 32, y: 32, z: 32}
   m_ChunkCullingBounds: {x: 0, y: 0, z: 0}
   m_MaxChunkCount: 16
   m_MaxFrameAge: 16
-  m_SortOrder: 0
+  m_SortOrder: 2
   m_Mode: 0
   m_DetectChunkCullingBounds: 0
   m_MaskInteraction: 0
@@ -775,7 +775,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   tilemap: {fileID: 1071811024}
-  breakTileMap: {fileID: 0}
+  breakTileMap: {fileID: 1020998296}
   tileDatas:
   - {fileID: 11400000, guid: 9c4e3fc2d20b0bd46ba1d08bd6544725, type: 2}
   - {fileID: 11400000, guid: edba57f6dcb485a4bb0ff6c8513da8a4, type: 2}
