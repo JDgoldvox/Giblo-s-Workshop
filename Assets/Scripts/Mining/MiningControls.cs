@@ -8,7 +8,7 @@ public class MiningControls : MonoBehaviour
 {
     public static MiningControls Instance;
 
-    [SerializeField]
+    [SerializeField] public Tilemap tileMap;
 
     private MiningInputActions miningInputActions;
     private InputAction mineAction;
@@ -20,7 +20,6 @@ public class MiningControls : MonoBehaviour
     public bool isMiningButtonDown { get; private set; } = false;
     public bool isJumpHeld { get; private set; } = false;
     public bool isTouchingFloor { get; private set; } = false;
-
 
     private void Awake()
     {
@@ -60,6 +59,10 @@ public class MiningControls : MonoBehaviour
         moveAction.Disable();
         moveAction.performed -= Move;
         moveAction.canceled -= Move;
+
+        jumpAction.Disable();
+        jumpAction.performed -= Jump;
+        jumpAction.canceled -= Jump;
     }
 
     void Update()
@@ -75,17 +78,7 @@ public class MiningControls : MonoBehaviour
     private void IsTouchingFloor()
     {
         RaycastHit2D hit = Physics2D.Raycast(transform.position, new Vector2(0,-1), 0.6f, LayerMask.GetMask("TileMap"));
-        //Debug.DrawRay(transform.position, new Vector2(0, -1 * 0.6f), Color.red, 1f);
-
-        if (hit)
-        {
-            isTouchingFloor = true;
-        }
-        else
-        {
-            isTouchingFloor = false;
-        }
-
+        isTouchingFloor = (hit) ? true : false;
     }
     private void Mine(InputAction.CallbackContext context)
     {
@@ -115,9 +108,8 @@ public class MiningControls : MonoBehaviour
 
     private void UpdateMouseCellPosition()
     {
-        Tilemap map = TileManager.instance.tilemap;
         Vector2 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        mouseCellPosition = new Vector3Int(map.WorldToCell(mousePos).x, map.WorldToCell(mousePos).y, 0);
+        mouseCellPosition = new Vector3Int(tileMap.WorldToCell(mousePos).x, tileMap.WorldToCell(mousePos).y, 0);
     }
 
     private void Jump(InputAction.CallbackContext context)

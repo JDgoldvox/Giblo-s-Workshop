@@ -1,6 +1,8 @@
 using UnityEngine;
 using System.Collections;
 using UnityEngine.Tilemaps;
+using UnityEngine.UIElements;
+using Unity.VisualScripting;
 
 public class MiningActions : MonoBehaviour
 {
@@ -12,7 +14,8 @@ public class MiningActions : MonoBehaviour
 
     [SerializeField] private float walkMultiplier = 69;
     [SerializeField] private float jumpForce;
-    
+    private float miningDistance = 3f;
+
     Rigidbody2D rb2D = null;
 
     private int jumpsRemaining = 0;
@@ -52,67 +55,79 @@ public class MiningActions : MonoBehaviour
 
     private IEnumerator WaitToMine()
     {
-        float timer = 0;
-        Vector3Int blockTargettedPos = S_MiningControls.mouseCellPosition;
+        Vector3Int tileTargettedPos = S_MiningControls.mouseCellPosition;
         Tilemap map = S_TileManager.tilemap;
-
-        //get max break time
-        float timeToMineABlock = 100;
-        if (S_TileManager.liveTileData.TryGetValue(blockTargettedPos, out LiveTileData liveTileData))
-        {
-            timeToMineABlock = liveTileData.maxBreakTime;
-            timer = liveTileData.currentBreakTime;
-        }
+        LiveTileData liveTileData = null;
 
         //whilst left mouse button still held down
         while (S_MiningControls.isMiningButtonDown)
         {
-            //block continuing until valid tile is hovered over
-            if (!map.GetTile(blockTargettedPos))
+            //check if valid tile position
+            if (liveTileData == null)
             {
-                timer = liveTileData.currentBreakTime;
-                blockTargettedPos = S_MiningControls.mouseCellPosition;
-                timeToMineABlock = S_TileManager.liveTileData[blockTargettedPos].maxBreakTime; //change new block mining time
-                yield return null;
+                //find current pos of mouse to see if we get a new tile
+                tileTargettedPos = S_MiningControls.mouseCellPosition;
+
+                if (CheckIfValidTile(tileTargettedPos))
+                {
+                    liveTileData = S_TileManager.liveTileData[tileTargettedPos];
+                }
+                else
+                {
+                    yield return null;
+                    continue;
+                }
             }
 
-            //update current break time
-            timer += Time.deltaTime;
-            liveTileData.currentBreakTime = timer;
-
-            //check if we moved our mouse
-            if (S_MiningControls.mouseCellPosition != blockTargettedPos)
+            //check if our mouse moved
+            if (tileTargettedPos != S_MiningControls.mouseCellPosition)
             {
-                timer = liveTileData.currentBreakTime;
-                Debug.Log("remoing break sprite");
-                //Start a timer to see whether the tile was touched again, if not 3 seconds will pass and live data will reset
-                StartCoroutine(UntouchedTileTimer(blockTargettedPos));
+                //mouse position changed
 
-                blockTargettedPos = S_MiningControls.mouseCellPosition;
+                //Set fade break sprite
+                StartCoroutine(UntouchedTileTimer(tileTargettedPos));
+
+                //set details
+                tileTargettedPos = S_MiningControls.mouseCellPosition;
+                liveTileData = null;
+                continue;
             }
 
-            // update break sprite
-            S_TileManager.SetBreakSprite(blockTargettedPos, (timer / timeToMineABlock) * 100);
-            S_TileManager.liveTileData[blockTargettedPos].TouchTile();
+            //BELOW THIS IS UPDATING STUFF, EVERYTHING IS IN ORDER
 
-            //if we break block
-            if (timer > timeToMineABlock)
+            //timer
+            liveTileData.currentBreakTime += Time.deltaTime;
+
+            //break sprite
+            float percentageMined = (liveTileData.currentBreakTime / liveTileData.maxBreakTime);
+            S_TileManager.SetBreakSprite(tileTargettedPos, percentageMined);
+            liveTileData.TouchTile();
+
+            //mine
+            if (liveTileData.currentBreakTime >= liveTileData.maxBreakTime)
             {
-                AddMaterialToInventory(map.GetTile(blockTargettedPos));
-                map.SetTile(blockTargettedPos, null);
+                //break tile
+                TileBase tileMined = map.GetTile(tileTargettedPos);
+                AddMaterialToInventory(tileMined);
+                map.SetTile(tileTargettedPos, null);
 
                 //remove previous break sprite
-                S_TileManager.DeleteBreakSprite(blockTargettedPos);
+                S_TileManager.DeleteBreakSprite(tileTargettedPos);
 
+                //reset
+                liveTileData.isAlive = false;
+                liveTileData.currentBreakTime = 0;
+                liveTileData = null;
+                continue;
             }
 
             yield return null;
         }
 
-        StartCoroutine(UntouchedTileTimer(blockTargettedPos));
-
-        //nothing happened
-        yield return null;
+        if (CheckIfValidTile(tileTargettedPos))
+        {
+            StartCoroutine(UntouchedTileTimer(tileTargettedPos));
+        }
     }
 
     IEnumerator UntouchedTileTimer(Vector3Int tileTargettedPos)
@@ -137,8 +152,29 @@ public class MiningActions : MonoBehaviour
 
             yield return null;
         }
+    }
 
-        yield return null;
+    private bool CheckIfValidTile(Vector3Int tileTargettedPos)
+    {
+        //if does not exit in live data
+        if(!S_TileManager.liveTileData.ContainsKey(tileTargettedPos))
+        {
+            return false;
+        }
+        else if (!S_TileManager.liveTileData[tileTargettedPos].isAlive)
+        {
+            return false;
+        }
+
+        Vector3Int playerPosition = S_MiningControls.tileMap.WorldToCell(transform.position);
+        float targettedTileToPlayerDistance = Vector3Int.Distance(playerPosition, tileTargettedPos);
+
+        if (targettedTileToPlayerDistance > miningDistance)//outside reach distance
+        {
+            return false;
+        }
+
+        return true;
     }
 
     private void AddMaterialToInventory(TileBase tileBase)

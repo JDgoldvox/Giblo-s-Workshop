@@ -212,25 +212,19 @@ public class TileManager : MonoBehaviour
 
     public void SetBreakSprite(Vector3Int position, float percentage)
     {
-        if (!liveTileData.ContainsKey(position))
-        {
-            Debug.Log("Does not contain " + position); 
-            return;
-        }
-
-        if(percentage > 0 && percentage < 25)
+        if(percentage > 0 && percentage < 0.25)
         {
             breakTileMap.SetTile(position, breakTiles[0]);
         }
-        else if(percentage >= 25 && percentage < 50)
+        else if(percentage >= 0.25 && percentage < 0.5)
         {
             breakTileMap.SetTile(position, breakTiles[1]);
         }
-        else if (percentage > 50 && percentage < 75)
+        else if (percentage > 0.5 && percentage < 0.75)
         {
             breakTileMap.SetTile(position, breakTiles[2]);
         }
-        else if (percentage > 75 && percentage < 100)
+        else if (percentage > 0.75 && percentage < 1)
         {
             breakTileMap.SetTile(position, breakTiles[3]);
         }
@@ -256,7 +250,6 @@ public class TileManager : MonoBehaviour
                 {
                     continue;
                 }
-
                 TileData thisTileData = tileToData[typeOfTile];
                 float maxBreakTime = thisTileData.maxBreakTime;
 
