@@ -792,6 +792,10 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 54078e85bc743c1428b0b87659f2d638, type: 2}
   - {fileID: 11400000, guid: 4102e5edf62c72a4db81b365c62b6b12, type: 2}
   - {fileID: 11400000, guid: c8234bdf65ac29b46b21b1c4bafe1172, type: 2}
+  tileChancesSO:
+  - {fileID: 11400000, guid: c2649b5f5a97aec429c557f587a8291e, type: 2}
+  - {fileID: 11400000, guid: 8547c8d1ca0c4d44fb8aeb01e760e476, type: 2}
+  - {fileID: 11400000, guid: c1a92c56258dcd841a506902b0d44052, type: 2}
 --- !u!1 &2106317901
 GameObject:
   m_ObjectHideFlags: 0
