@@ -198,7 +198,6 @@ public class MiningActions : MonoBehaviour
         //reset
         if (S_MiningControls.isTouchingFloor && !ignoreFloorReset)
         {
-            Debug.Log("Resetting jump");
             jumpsRemaining = maxNumberOfJumps;
         }
 
