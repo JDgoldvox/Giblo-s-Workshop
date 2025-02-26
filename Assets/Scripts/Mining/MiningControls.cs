@@ -20,7 +20,7 @@ public class MiningControls : MonoBehaviour
     public bool isMiningButtonDown { get; private set; } = false;
     public bool isJumpHeld { get; private set; } = false;
     public bool isTouchingFloor { get; private set; } = false;
-
+    public bool isFacingRight { get; private set; } = true;
     private void Awake()
     {
         miningInputActions = new MiningInputActions();
@@ -77,7 +77,8 @@ public class MiningControls : MonoBehaviour
 
     private void IsTouchingFloor()
     {
-        RaycastHit2D hit = Physics2D.Raycast(transform.position, new Vector2(0,-1), 0.6f, LayerMask.GetMask("TileMap"));
+        RaycastHit2D hit = Physics2D.Raycast(transform.position, new Vector2(0,-1), 1f, LayerMask.GetMask("TileMap"));
+        //Debug.DrawRay(transform.position, new Vector2(0, -1) * 1f, Color.white);
         isTouchingFloor = (hit) ? true : false;
     }
     private void Mine(InputAction.CallbackContext context)
@@ -99,6 +100,17 @@ public class MiningControls : MonoBehaviour
         if (context.performed)
         {
             moveDirection = context.ReadValue<Vector2>();
+
+            if(moveDirection == Vector2.right)
+            {
+                isFacingRight = true;
+                Debug.Log("Facing right");
+            }
+            else
+            {
+                isFacingRight = false;
+                Debug.Log("Facing left");
+            }
         }
         else if (context.canceled)
         {
